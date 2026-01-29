@@ -185,6 +185,10 @@ export function App() {
                 <p className="text-xs text-green-100 font-medium uppercase tracking-wider">Total Commitments</p>
                 <p className="mt-1 text-3xl font-bold">{currency.format(totalCommitments)}</p>
               </div>
+
+
+
+              
               <div className="rounded-2xl bg-white/20 backdrop-blur-md border border-white/20 p-4 shadow-lg ring-1 ring-white/30">
                 <p className="text-xs text-green-50 font-bold uppercase tracking-wider">Safe Daily Spend</p>
                 <p className="mt-1 text-3xl font-black text-white">{currency.format(dailyBudget)}</p>
@@ -439,7 +443,7 @@ export function App() {
             </div>
           </div>
 
-          {/* Local Ads / Sponsored Content */}
+          {/* Local Ads / Sponsored Content 
           {showAd && (
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden relative">
               <div className="flex items-center justify-between relative z-10">
@@ -471,6 +475,7 @@ export function App() {
               </div>
             </div>
           )}
+             */}
 
           {/* Quick Stats / Insights */}
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
