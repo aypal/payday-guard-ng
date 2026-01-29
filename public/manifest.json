@@ -1,0 +1,16 @@
+{
+  "name": "Payday Guard NG",
+  "short_name": "PaydayNG",
+  "description": "Nigerian salary calculator. Track expenses, savings, betting budget, and daily Naira spending.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#16a34a",
+  "theme_color": "#16a34a",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'><rect width='128' height='128' rx='28' fill='%2316a34a'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-size='52' font-family='Arial' fill='white'>₦</text></svg>",
+      "sizes": "128x128",
+      "type": "image/svg+xml"
+    }
+  ]
+}
