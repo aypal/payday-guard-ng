@@ -40,9 +40,16 @@ const getStorage = <T,>(key: string, fallback: T): T => {
 };
 
 export function App() {
+  const toNumber = (value: string, fallback = 0) => {
+    const trimmed = value.trim();
+    if (trimmed === "") return fallback;
+    const n = Number(trimmed);
+    return Number.isFinite(n) ? n : fallback;
+  };
   // Initialize state from local storage or defaults
-  const [salary, setSalary] = useState<number>(() => getStorage("pg_salary", 350000));
-  const [cycleDays, setCycleDays] = useState<number>(() => getStorage("pg_cycleDays", 30));
+  // Store number inputs as strings so the user can clear the field (""), then parse safely for calculations.
+  const [salaryInput, setSalaryInput] = useState<string>(() => String(getStorage("pg_salary", 350000)));
+  const [cycleDaysInput, setCycleDaysInput] = useState<string>(() => String(getStorage("pg_cycleDays", 30)));
   const [lastPayday, setLastPayday] = useState<string>(() => {
     const today = new Date();
     today.setDate(today.getDate() - 12);
@@ -53,14 +60,21 @@ export function App() {
   const [expenseName, setExpenseName] = useState("");
   const [expenseAmount, setExpenseAmount] = useState("");
   
-  const [savingsGoal, setSavingsGoal] = useState<number>(() => getStorage("pg_savingsGoal", 100000));
-  const [emergencyFund, setEmergencyFund] = useState<number>(() => getStorage("pg_emergencyFund", 50000));
-  const [bettingBudget, setBettingBudget] = useState<number>(() => getStorage("pg_bettingBudget", 5000));
-  const [allowance, setAllowance] = useState<number>(() => getStorage("pg_allowance", 20000));
+  const [savingsGoalInput, setSavingsGoalInput] = useState<string>(() => String(getStorage("pg_savingsGoal", 100000)));
+  const [emergencyFundInput, setEmergencyFundInput] = useState<string>(() => String(getStorage("pg_emergencyFund", 50000)));
+  const [bettingBudgetInput, setBettingBudgetInput] = useState<string>(() => String(getStorage("pg_bettingBudget", 5000)));
+  const [allowanceInput, setAllowanceInput] = useState<string>(() => String(getStorage("pg_allowance", 20000)));
 
   // Ad visibility state
   const [showAd, setShowAd] = useState(true);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
+
+  const salary = useMemo(() => toNumber(salaryInput, 0), [salaryInput]);
+  const cycleDays = useMemo(() => Math.max(1, toNumber(cycleDaysInput, 30)), [cycleDaysInput]);
+  const savingsGoal = useMemo(() => toNumber(savingsGoalInput, 0), [savingsGoalInput]);
+  const emergencyFund = useMemo(() => toNumber(emergencyFundInput, 0), [emergencyFundInput]);
+  const bettingBudget = useMemo(() => toNumber(bettingBudgetInput, 0), [bettingBudgetInput]);
+  const allowance = useMemo(() => toNumber(allowanceInput, 0), [allowanceInput]);
 
   // Sync state to local storage whenever it changes
   useEffect(() => {
@@ -176,25 +190,34 @@ export function App() {
                 Master your monthly income. Track expenses, set goals, and know exactly what you can spend today.
               </p>
             </div>
-            <div className="mt-8 grid gap-4 sm:grid-cols-3 relative z-10">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 relative z-10">
               <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 p-4">
                 <p className="text-xs text-green-100 font-medium uppercase tracking-wider">Days to Payday</p>
                 <p className="mt-1 text-3xl font-bold">{daysLeft}</p>
               </div>
-              <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 p-4">
-                <p className="text-xs text-green-100 font-medium uppercase tracking-wider">Total Commitments</p>
-                <p className="mt-1 text-3xl font-bold">{currency.format(totalCommitments)}</p>
-              </div>
-
-
-
-              
               <div className="rounded-2xl bg-white/20 backdrop-blur-md border border-white/20 p-4 shadow-lg ring-1 ring-white/30">
                 <p className="text-xs text-green-50 font-bold uppercase tracking-wider">Safe Daily Spend</p>
                 <p className="mt-1 text-3xl font-black text-white">{currency.format(dailyBudget)}</p>
               </div>
             </div>
           </header>
+
+          {/* Sticky Total Commitments Bar */}
+          {/* NOTE: top offset accounts for the sticky ad banner height */}
+          <div className="sticky top-14 sm:top-12 z-40">
+            <div className="rounded-2xl bg-white/90 backdrop-blur-md border border-slate-200 p-4 shadow-lg">
+              <div className="flex items-center justify-between gap-6">
+                <div>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Commitments</p>
+                  <p className="mt-1 text-2xl font-black text-slate-900">{currency.format(totalCommitments)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Remaining</p>
+                  <p className="mt-1 text-2xl font-black text-green-700">{currency.format(disposable)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -212,8 +235,9 @@ export function App() {
                     <input
                       type="number"
                       className="w-full bg-transparent text-xl font-bold outline-none text-slate-800"
-                      value={salary}
-                      onChange={(event) => setSalary(Number(event.target.value))}
+                      value={salaryInput}
+                      onChange={(event) => setSalaryInput(event.target.value)}
+                      onFocus={(event) => event.target.select()}
                       min={0}
                     />
                   </div>
@@ -228,8 +252,9 @@ export function App() {
                       <input
                         type="number"
                         className="w-full bg-transparent text-sm font-bold outline-none text-slate-700"
-                        value={savingsGoal}
-                        onChange={(event) => setSavingsGoal(Number(event.target.value))}
+                        value={savingsGoalInput}
+                        onChange={(event) => setSavingsGoalInput(event.target.value)}
+                        onFocus={(event) => event.target.select()}
                         min={0}
                       />
                     </div>
@@ -243,8 +268,9 @@ export function App() {
                       <input
                         type="number"
                         className="w-full bg-transparent text-sm font-bold outline-none text-slate-700"
-                        value={emergencyFund}
-                        onChange={(event) => setEmergencyFund(Number(event.target.value))}
+                        value={emergencyFundInput}
+                        onChange={(event) => setEmergencyFundInput(event.target.value)}
+                        onFocus={(event) => event.target.select()}
                         min={0}
                       />
                     </div>
@@ -260,8 +286,9 @@ export function App() {
                       <input
                         type="number"
                         className="w-full bg-transparent text-sm font-bold outline-none text-slate-700"
-                        value={bettingBudget}
-                        onChange={(event) => setBettingBudget(Number(event.target.value))}
+                        value={bettingBudgetInput}
+                        onChange={(event) => setBettingBudgetInput(event.target.value)}
+                        onFocus={(event) => event.target.select()}
                         min={0}
                       />
                     </div>
@@ -275,8 +302,9 @@ export function App() {
                       <input
                         type="number"
                         className="w-full bg-transparent text-sm font-bold outline-none text-slate-700"
-                        value={allowance}
-                        onChange={(event) => setAllowance(Number(event.target.value))}
+                        value={allowanceInput}
+                        onChange={(event) => setAllowanceInput(event.target.value)}
+                        onFocus={(event) => event.target.select()}
                         min={0}
                       />
                     </div>
@@ -321,8 +349,9 @@ export function App() {
                   <input
                     type="number"
                     min={1}
-                    value={cycleDays}
-                    onChange={(event) => setCycleDays(Number(event.target.value))}
+                    value={cycleDaysInput}
+                    onChange={(event) => setCycleDaysInput(event.target.value)}
+                    onFocus={(event) => event.target.select()}
                     className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-green-500 outline-none"
                   />
                 </div>
@@ -429,53 +458,9 @@ export function App() {
             </div>
           </form>
 
-          {/* Google Ads Placeholder */}
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm text-center">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">Advertisement</p>
-            <div className="min-h-[250px] bg-slate-50 rounded-2xl flex items-center justify-center border-2 border-dashed border-slate-200 p-4">
-              <ins className="adsbygoogle"
-                   style={{ display: 'block' }}
-                   data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                   data-ad-slot="XXXXXXXXXX"
-                   data-ad-format="auto"
-                   data-full-width-responsive="true"></ins>
-              <p className="text-[11px] text-slate-400 italic">Google AdSense will load here after integration.</p>
-            </div>
-          </div>
+          {/* Google AdSense ads will appear automatically based on your index.html integration */}
 
-          {/* Local Ads / Sponsored Content 
-          {showAd && (
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden relative">
-              <div className="flex items-center justify-between relative z-10">
-                <h2 className="text-lg font-bold text-slate-800">Featured Offers</h2>
-                <button
-                  onClick={() => setShowAd(false)}
-                  className="p-1 text-slate-300 hover:text-slate-500 transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                </button>
-              </div>
-              <div className={`mt-4 rounded-2xl ${adData[currentAdIndex].bgColor} p-6 text-white shadow-lg shadow-${adData[currentAdIndex].bgColor.split('-')[1]}-200 transition-all duration-300 relative group`}>
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors"></div>
-                <h3 className="font-black text-xl leading-tight">{adData[currentAdIndex].title}</h3>
-                <p className="mt-1 text-sm text-white/90 font-medium italic">{adData[currentAdIndex].description}</p>
-                <button className="mt-5 w-full rounded-xl bg-white text-slate-900 py-3 text-xs font-black uppercase tracking-wider transition hover:bg-slate-100 shadow-md">
-                  {adData[currentAdIndex].cta}
-                </button>
-              </div>
-              <div className="mt-4 flex items-center justify-between">
-                <div className="flex gap-1">
-                  {adData.map((_, i) => (
-                    <div key={i} className={`h-1 w-3 rounded-full ${i === currentAdIndex ? 'bg-slate-800' : 'bg-slate-200'}`}></div>
-                  ))}
-                </div>
-                <button onClick={cycleAd} className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-800 flex items-center gap-1">
-                  Next Deal <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                </button>
-              </div>
-            </div>
-          )}
-             */}
+          {/* Ads removed - Google AdSense handles ad placement automatically */}
 
           {/* Quick Stats / Insights */}
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
